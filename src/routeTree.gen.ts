@@ -9,13 +9,25 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PlacesRouteImport } from './routes/places'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PlacesIdRouteImport } from './routes/places.$id'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 
+const PlacesRoute = PlacesRouteImport.update({
+  id: '/places',
+  path: '/places',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const PlacesIdRoute = PlacesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => PlacesRoute,
 } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
@@ -25,38 +37,59 @@ const ApiChatRoute = ApiChatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/places': typeof PlacesRouteWithChildren
   '/api/chat': typeof ApiChatRoute
+  '/places/$id': typeof PlacesIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/places': typeof PlacesRouteWithChildren
   '/api/chat': typeof ApiChatRoute
+  '/places/$id': typeof PlacesIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/places': typeof PlacesRouteWithChildren
   '/api/chat': typeof ApiChatRoute
+  '/places/$id': typeof PlacesIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/chat'
+  fullPaths: '/' | '/places' | '/api/chat' | '/places/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/chat'
-  id: '__root__' | '/' | '/api/chat'
+  to: '/' | '/places' | '/api/chat' | '/places/$id'
+  id: '__root__' | '/' | '/places' | '/api/chat' | '/places/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  PlacesRoute: typeof PlacesRouteWithChildren
   ApiChatRoute: typeof ApiChatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/places': {
+      id: '/places'
+      path: '/places'
+      fullPath: '/places'
+      preLoaderRoute: typeof PlacesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/places/$id': {
+      id: '/places/$id'
+      path: '/$id'
+      fullPath: '/places/$id'
+      preLoaderRoute: typeof PlacesIdRouteImport
+      parentRoute: typeof PlacesRoute
     }
     '/api/chat': {
       id: '/api/chat'
@@ -68,10 +101,31 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface PlacesRouteChildren {
+  PlacesIdRoute: typeof PlacesIdRoute
+}
+
+const PlacesRouteChildren: PlacesRouteChildren = {
+  PlacesIdRoute: PlacesIdRoute,
+}
+
+const PlacesRouteWithChildren =
+  PlacesRoute._addFileChildren(PlacesRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  PlacesRoute: PlacesRouteWithChildren,
   ApiChatRoute: ApiChatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
