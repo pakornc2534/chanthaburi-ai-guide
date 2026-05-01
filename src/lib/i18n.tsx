@@ -1,0 +1,167 @@
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+
+export type Lang = "th" | "en";
+
+type Dict = Record<string, { th: string; en: string }>;
+
+const dict = {
+  appName: { th: "เที่ยวจันท์", en: "TripChan" },
+  tagline: {
+    th: "ผู้ช่วย AI แนะนำที่เที่ยวจันทบุรี",
+    en: "Your AI guide to Chanthaburi",
+  },
+  heroTitle: {
+    th: "ค้นพบจันทบุรีในแบบของคุณ",
+    en: "Discover Chanthaburi your way",
+  },
+  heroSubtitle: {
+    th: "ทะเล ภูเขา น้ำตก ของกิน คาเฟ่ — ให้ AI ช่วยวางแผนเที่ยวให้คุณ",
+    en: "Sea, mountains, waterfalls, food, cafés — let AI plan your trip.",
+  },
+  ctaChat: { th: "แชทกับ AI", en: "Chat with AI" },
+  ctaPlanner: { th: "สร้างแผนเที่ยว", en: "Create a trip plan" },
+  navHome: { th: "หน้าแรก", en: "Home" },
+  navPlaces: { th: "สถานที่", en: "Places" },
+  navChat: { th: "แชท AI", en: "Chat" },
+  navPlanner: { th: "วางแผน", en: "Plan" },
+  navFavorites: { th: "โปรด", en: "Saved" },
+  topPicks: { th: "สถานที่แนะนำ", en: "Top picks" },
+  browseByCategory: { th: "เลือกตามหมวด", en: "Browse by category" },
+  allPlaces: { th: "สถานที่ทั้งหมด", en: "All places" },
+  search: { th: "ค้นหา...", en: "Search..." },
+  filter: { th: "กรอง", en: "Filter" },
+  category: { th: "หมวดหมู่", en: "Category" },
+  district: { th: "อำเภอ", en: "District" },
+  free: { th: "เข้าฟรี", en: "Free entry" },
+  paid: { th: "มีค่าเข้า", en: "Paid" },
+  all: { th: "ทั้งหมด", en: "All" },
+  beach: { th: "ทะเล", en: "Beach" },
+  nature: { th: "ภูเขา/น้ำตก", en: "Nature" },
+  history: { th: "ประวัติศาสตร์", en: "History" },
+  temple: { th: "วัด", en: "Temple" },
+  cafe: { th: "คาเฟ่", en: "Café" },
+  market: { th: "ตลาด", en: "Market" },
+  fruit: { th: "ผลไม้", en: "Fruit farm" },
+  attraction: { th: "สถานที่ท่องเที่ยว", en: "Attraction" },
+  viewpoint: { th: "จุดชมวิว", en: "Viewpoint" },
+  openingHours: { th: "เวลาเปิด", en: "Hours" },
+  priceInfo: { th: "ค่าเข้า", en: "Entry" },
+  address: { th: "ที่อยู่", en: "Address" },
+  phone: { th: "เบอร์โทร", en: "Phone" },
+  openInMaps: { th: "เปิดใน Google Maps", en: "Open in Google Maps" },
+  saveToFavorites: { th: "บันทึกโปรด", en: "Save" },
+  saved: { th: "บันทึกแล้ว", en: "Saved" },
+  askAI: { th: "ถาม AI เกี่ยวกับที่นี่", en: "Ask AI about this" },
+  chatTitle: { th: "แชทกับไกด์ AI", en: "Chat with AI guide" },
+  chatPlaceholder: {
+    th: "ถามอะไรก็ได้เกี่ยวกับจันทบุรี...",
+    en: "Ask anything about Chanthaburi...",
+  },
+  send: { th: "ส่ง", en: "Send" },
+  thinking: { th: "กำลังคิด...", en: "Thinking..." },
+  exampleQuestions: { th: "ตัวอย่างคำถาม", en: "Try asking" },
+  ex1: { th: "ที่เที่ยวธรรมชาติ 1 วัน", en: "1-day nature trip" },
+  ex2: { th: "คาเฟ่ริมทะเลที่ห้ามพลาด", en: "Best beachfront cafés" },
+  ex3: { th: "ของกินขึ้นชื่อจันทบุรี", en: "Famous local food" },
+  ex4: { th: "วัดและสถานที่ประวัติศาสตร์", en: "Temples & history sites" },
+  plannerTitle: { th: "วางแผนเที่ยวจันทบุรี", en: "Plan your Chanthaburi trip" },
+  days: { th: "จำนวนวัน", en: "Days" },
+  budget: { th: "งบประมาณ", en: "Budget" },
+  budgetLow: { th: "ประหยัด", en: "Budget" },
+  budgetMid: { th: "ปานกลาง", en: "Mid-range" },
+  budgetHigh: { th: "พรีเมียม", en: "Premium" },
+  interests: { th: "ความสนใจ", en: "Interests" },
+  travelStyle: { th: "ลักษณะการเดินทาง", en: "Travel style" },
+  family: { th: "ครอบครัว", en: "Family" },
+  couple: { th: "คู่รัก", en: "Couple" },
+  friends: { th: "เพื่อน", en: "Friends" },
+  solo: { th: "คนเดียว", en: "Solo" },
+  generatePlan: { th: "สร้างแผน", en: "Generate plan" },
+  regenerate: { th: "สร้างใหม่", en: "Regenerate" },
+  saveTrip: { th: "บันทึกแผน", en: "Save plan" },
+  shareTrip: { th: "แชร์แผน", en: "Share plan" },
+  copied: { th: "คัดลอกลิงก์แล้ว!", en: "Link copied!" },
+  morning: { th: "เช้า", en: "Morning" },
+  noon: { th: "กลางวัน", en: "Noon" },
+  afternoon: { th: "บ่าย", en: "Afternoon" },
+  evening: { th: "เย็น", en: "Evening" },
+  day: { th: "วันที่", en: "Day" },
+  favoritesTitle: { th: "รายการโปรด", en: "Saved" },
+  emptyFavorites: {
+    th: "ยังไม่มีรายการโปรด ลองกดหัวใจที่สถานที่ที่ชอบ",
+    en: "No saved places yet. Tap the heart on places you love.",
+  },
+  loading: { th: "กำลังโหลด...", en: "Loading..." },
+  errorRateLimit: {
+    th: "มีคำขอเยอะเกินไป กรุณารอสักครู่",
+    en: "Too many requests, please wait a moment.",
+  },
+  errorPayment: {
+    th: "เครดิต AI หมด กรุณาเติมเครดิตใน Workspace",
+    en: "AI credits exhausted. Please top up your workspace.",
+  },
+  errorGeneric: {
+    th: "เกิดข้อผิดพลาด ลองใหม่อีกครั้ง",
+    en: "Something went wrong, please try again.",
+  },
+  nearbyPlaces: { th: "ที่เที่ยวใกล้เคียง", en: "Nearby places" },
+  backHome: { th: "กลับหน้าแรก", en: "Back home" },
+  notFound: { th: "ไม่พบหน้านี้", en: "Page not found" },
+  generating: { th: "กำลังสร้างแผน...", en: "Generating plan..." },
+  shareDesc: { th: "แผนเที่ยวที่แชร์", en: "Shared trip plan" },
+  publicPlan: { th: "แผนเที่ยวสาธารณะ", en: "Public trip plan" },
+  newChat: { th: "เริ่มใหม่", en: "New chat" },
+  resultPlan: { th: "แผนเที่ยวของคุณ", en: "Your trip plan" },
+  noResults: { th: "ไม่พบสถานที่ที่ค้นหา", en: "No matching places" },
+  about: { th: "เกี่ยวกับ", en: "About" },
+  language: { th: "ภาษา", en: "Language" },
+} satisfies Dict;
+
+type Key = keyof typeof dict;
+
+interface I18nContextType {
+  lang: Lang;
+  setLang: (l: Lang) => void;
+  t: (key: Key) => string;
+}
+
+const I18nContext = createContext<I18nContextType | null>(null);
+
+export function I18nProvider({ children }: { children: ReactNode }) {
+  const [lang, setLangState] = useState<Lang>("th");
+
+  useEffect(() => {
+    const stored = (typeof window !== "undefined" && localStorage.getItem("lang")) as Lang | null;
+    if (stored === "th" || stored === "en") setLangState(stored);
+  }, []);
+
+  const setLang = (l: Lang) => {
+    setLangState(l);
+    if (typeof window !== "undefined") localStorage.setItem("lang", l);
+  };
+
+  const t = (key: Key) => dict[key][lang];
+
+  return <I18nContext.Provider value={{ lang, setLang, t }}>{children}</I18nContext.Provider>;
+}
+
+export function useI18n() {
+  const ctx = useContext(I18nContext);
+  if (!ctx) throw new Error("useI18n must be used within I18nProvider");
+  return ctx;
+}
+
+export const categoryLabel = (cat: string, lang: Lang): string => {
+  const map: Record<string, { th: string; en: string }> = {
+    beach: { th: "ทะเล", en: "Beach" },
+    nature: { th: "ภูเขา/น้ำตก", en: "Nature" },
+    history: { th: "ประวัติศาสตร์", en: "History" },
+    temple: { th: "วัด", en: "Temple" },
+    cafe: { th: "คาเฟ่", en: "Café" },
+    market: { th: "ตลาด", en: "Market" },
+    fruit: { th: "ผลไม้", en: "Fruit farm" },
+    attraction: { th: "สถานที่ท่องเที่ยว", en: "Attraction" },
+    viewpoint: { th: "จุดชมวิว", en: "Viewpoint" },
+  };
+  return map[cat]?.[lang] ?? cat;
+};

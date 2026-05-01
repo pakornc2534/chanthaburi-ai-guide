@@ -9,38 +9,160 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PlannerRouteImport } from './routes/planner'
+import { Route as PlacesRouteImport } from './routes/places'
+import { Route as FavoritesRouteImport } from './routes/favorites'
+import { Route as ChatRouteImport } from './routes/chat'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TripShareIdRouteImport } from './routes/trip.$shareId'
+import { Route as PlacesIdRouteImport } from './routes/places.$id'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
 
+const PlannerRoute = PlannerRouteImport.update({
+  id: '/planner',
+  path: '/planner',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlacesRoute = PlacesRouteImport.update({
+  id: '/places',
+  path: '/places',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FavoritesRoute = FavoritesRouteImport.update({
+  id: '/favorites',
+  path: '/favorites',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChatRoute = ChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TripShareIdRoute = TripShareIdRouteImport.update({
+  id: '/trip/$shareId',
+  path: '/trip/$shareId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlacesIdRoute = PlacesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => PlacesRoute,
+} as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/chat': typeof ChatRoute
+  '/favorites': typeof FavoritesRoute
+  '/places': typeof PlacesRouteWithChildren
+  '/planner': typeof PlannerRoute
+  '/api/chat': typeof ApiChatRoute
+  '/places/$id': typeof PlacesIdRoute
+  '/trip/$shareId': typeof TripShareIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/chat': typeof ChatRoute
+  '/favorites': typeof FavoritesRoute
+  '/places': typeof PlacesRouteWithChildren
+  '/planner': typeof PlannerRoute
+  '/api/chat': typeof ApiChatRoute
+  '/places/$id': typeof PlacesIdRoute
+  '/trip/$shareId': typeof TripShareIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/chat': typeof ChatRoute
+  '/favorites': typeof FavoritesRoute
+  '/places': typeof PlacesRouteWithChildren
+  '/planner': typeof PlannerRoute
+  '/api/chat': typeof ApiChatRoute
+  '/places/$id': typeof PlacesIdRoute
+  '/trip/$shareId': typeof TripShareIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/chat'
+    | '/favorites'
+    | '/places'
+    | '/planner'
+    | '/api/chat'
+    | '/places/$id'
+    | '/trip/$shareId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/chat'
+    | '/favorites'
+    | '/places'
+    | '/planner'
+    | '/api/chat'
+    | '/places/$id'
+    | '/trip/$shareId'
+  id:
+    | '__root__'
+    | '/'
+    | '/chat'
+    | '/favorites'
+    | '/places'
+    | '/planner'
+    | '/api/chat'
+    | '/places/$id'
+    | '/trip/$shareId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ChatRoute: typeof ChatRoute
+  FavoritesRoute: typeof FavoritesRoute
+  PlacesRoute: typeof PlacesRouteWithChildren
+  PlannerRoute: typeof PlannerRoute
+  ApiChatRoute: typeof ApiChatRoute
+  TripShareIdRoute: typeof TripShareIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/planner': {
+      id: '/planner'
+      path: '/planner'
+      fullPath: '/planner'
+      preLoaderRoute: typeof PlannerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/places': {
+      id: '/places'
+      path: '/places'
+      fullPath: '/places'
+      preLoaderRoute: typeof PlacesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/favorites': {
+      id: '/favorites'
+      path: '/favorites'
+      fullPath: '/favorites'
+      preLoaderRoute: typeof FavoritesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chat': {
+      id: '/chat'
+      path: '/chat'
+      fullPath: '/chat'
+      preLoaderRoute: typeof ChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,21 +170,50 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/trip/$shareId': {
+      id: '/trip/$shareId'
+      path: '/trip/$shareId'
+      fullPath: '/trip/$shareId'
+      preLoaderRoute: typeof TripShareIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/places/$id': {
+      id: '/places/$id'
+      path: '/$id'
+      fullPath: '/places/$id'
+      preLoaderRoute: typeof PlacesIdRouteImport
+      parentRoute: typeof PlacesRoute
+    }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface PlacesRouteChildren {
+  PlacesIdRoute: typeof PlacesIdRoute
+}
+
+const PlacesRouteChildren: PlacesRouteChildren = {
+  PlacesIdRoute: PlacesIdRoute,
+}
+
+const PlacesRouteWithChildren =
+  PlacesRoute._addFileChildren(PlacesRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ChatRoute: ChatRoute,
+  FavoritesRoute: FavoritesRoute,
+  PlacesRoute: PlacesRouteWithChildren,
+  PlannerRoute: PlannerRoute,
+  ApiChatRoute: ApiChatRoute,
+  TripShareIdRoute: TripShareIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
