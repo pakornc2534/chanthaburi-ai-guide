@@ -76,7 +76,10 @@ function PlacesPage() {
                 key={c}
                 onClick={() =>
                   navigate({
-                    search: (s) => ({ ...s, category: c === "all" ? undefined : c }),
+                    search: (s: { category?: string; q?: string }) => ({
+                      ...s,
+                      category: c === "all" ? undefined : c,
+                    }),
                   })
                 }
                 className={cn(

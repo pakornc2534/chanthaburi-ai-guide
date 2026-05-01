@@ -54,7 +54,7 @@ function PlaceDetail() {
   const desc = lang === "th" ? place.description_th : place.description_en;
 
   const nearby = all
-    .filter((p) => p.id !== place.id && p.category === place.category)
+    .filter((p: Place) => p.id !== place.id && p.category === place.category)
     .slice(0, 4);
 
   const mapsUrl =
@@ -153,7 +153,7 @@ function PlaceDetail() {
         <section className="mt-10">
           <h2 className="mb-3 font-display text-lg font-semibold">{t("nearbyPlaces")}</h2>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            {nearby.map((p) => (
+            {nearby.map((p: Place) => (
               <PlaceCard key={p.id} place={p} />
             ))}
           </div>
