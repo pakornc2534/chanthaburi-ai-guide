@@ -18,6 +18,16 @@ app.use(
   }),
 )
 
+app.use(
+  '/loc_pic/*',
+  serveStatic({
+    root: './dist/client',
+    onFound: (_path, c) => {
+      c.header('Cache-Control', 'public, max-age=86400')
+    },
+  }),
+)
+
 app.all('*', (c) => handler.fetch(c.req.raw))
 
 serve({ fetch: app.fetch, port, hostname: host }, (info) => {
