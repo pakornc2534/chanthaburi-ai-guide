@@ -9,15 +9,22 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RewardsRouteImport } from './routes/rewards'
 import { Route as PlannerRouteImport } from './routes/planner'
 import { Route as PlacesRouteImport } from './routes/places'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PlacesIndexRouteImport } from './routes/places.index'
 import { Route as TripShareIdRouteImport } from './routes/trip.$shareId'
 import { Route as PlacesIdRouteImport } from './routes/places.$id'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 
+const RewardsRoute = RewardsRouteImport.update({
+  id: '/rewards',
+  path: '/rewards',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlannerRoute = PlannerRouteImport.update({
   id: '/planner',
   path: '/planner',
@@ -43,6 +50,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlacesIndexRoute = PlacesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PlacesRoute,
+} as any)
 const TripShareIdRoute = TripShareIdRouteImport.update({
   id: '/trip/$shareId',
   path: '/trip/$shareId',
@@ -65,19 +77,22 @@ export interface FileRoutesByFullPath {
   '/favorites': typeof FavoritesRoute
   '/places': typeof PlacesRouteWithChildren
   '/planner': typeof PlannerRoute
+  '/rewards': typeof RewardsRoute
   '/api/chat': typeof ApiChatRoute
   '/places/$id': typeof PlacesIdRoute
   '/trip/$shareId': typeof TripShareIdRoute
+  '/places/': typeof PlacesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
   '/favorites': typeof FavoritesRoute
-  '/places': typeof PlacesRouteWithChildren
   '/planner': typeof PlannerRoute
+  '/rewards': typeof RewardsRoute
   '/api/chat': typeof ApiChatRoute
   '/places/$id': typeof PlacesIdRoute
   '/trip/$shareId': typeof TripShareIdRoute
+  '/places': typeof PlacesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -86,9 +101,11 @@ export interface FileRoutesById {
   '/favorites': typeof FavoritesRoute
   '/places': typeof PlacesRouteWithChildren
   '/planner': typeof PlannerRoute
+  '/rewards': typeof RewardsRoute
   '/api/chat': typeof ApiChatRoute
   '/places/$id': typeof PlacesIdRoute
   '/trip/$shareId': typeof TripShareIdRoute
+  '/places/': typeof PlacesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -98,19 +115,22 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/places'
     | '/planner'
+    | '/rewards'
     | '/api/chat'
     | '/places/$id'
     | '/trip/$shareId'
+    | '/places/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/chat'
     | '/favorites'
-    | '/places'
     | '/planner'
+    | '/rewards'
     | '/api/chat'
     | '/places/$id'
     | '/trip/$shareId'
+    | '/places'
   id:
     | '__root__'
     | '/'
@@ -118,9 +138,11 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/places'
     | '/planner'
+    | '/rewards'
     | '/api/chat'
     | '/places/$id'
     | '/trip/$shareId'
+    | '/places/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -129,12 +151,20 @@ export interface RootRouteChildren {
   FavoritesRoute: typeof FavoritesRoute
   PlacesRoute: typeof PlacesRouteWithChildren
   PlannerRoute: typeof PlannerRoute
+  RewardsRoute: typeof RewardsRoute
   ApiChatRoute: typeof ApiChatRoute
   TripShareIdRoute: typeof TripShareIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/rewards': {
+      id: '/rewards'
+      path: '/rewards'
+      fullPath: '/rewards'
+      preLoaderRoute: typeof RewardsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/planner': {
       id: '/planner'
       path: '/planner'
@@ -170,6 +200,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/places/': {
+      id: '/places/'
+      path: '/'
+      fullPath: '/places/'
+      preLoaderRoute: typeof PlacesIndexRouteImport
+      parentRoute: typeof PlacesRoute
+    }
     '/trip/$shareId': {
       id: '/trip/$shareId'
       path: '/trip/$shareId'
@@ -196,10 +233,12 @@ declare module '@tanstack/react-router' {
 
 interface PlacesRouteChildren {
   PlacesIdRoute: typeof PlacesIdRoute
+  PlacesIndexRoute: typeof PlacesIndexRoute
 }
 
 const PlacesRouteChildren: PlacesRouteChildren = {
   PlacesIdRoute: PlacesIdRoute,
+  PlacesIndexRoute: PlacesIndexRoute,
 }
 
 const PlacesRouteWithChildren =
@@ -211,9 +250,19 @@ const rootRouteChildren: RootRouteChildren = {
   FavoritesRoute: FavoritesRoute,
   PlacesRoute: PlacesRouteWithChildren,
   PlannerRoute: PlannerRoute,
+  RewardsRoute: RewardsRoute,
   ApiChatRoute: ApiChatRoute,
   TripShareIdRoute: TripShareIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}

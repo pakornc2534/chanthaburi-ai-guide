@@ -14,8 +14,9 @@ const TripParamsSchema = z.object({
 export const generateTripPlan = createServerFn({ method: "POST" })
   .inputValidator((d) => TripParamsSchema.parse(d))
   .handler(async ({ data }) => {
-    const apiKey = process.env.LOVABLE_API_KEY;
-    if (!apiKey) throw new Error("LOVABLE_API_KEY missing");
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    if (!apiKey) throw new Error("OPENROUTER_API_KEY missing");
+    const model = process.env.OPENROUTER_MODEL || "google/gemini-2.0-flash-lite-001";
 
     // Pull places catalog (compact form) so AI uses real places
     const { data: places, error } = await supabaseAdmin
@@ -42,11 +43,16 @@ Rules:
 - Provide a short tip per item in the user's language
 - Title the trip nicely`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": process.env.OPENROUTER_SITE_URL || "http://localhost:5173",
+        "X-Title": process.env.OPENROUTER_SITE_NAME || "TripChan",
+      },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model,
         messages: [
           { role: "system", content: systemPrompt },
           {
@@ -109,7 +115,7 @@ Rules:
       if (response.status === 429) throw new Error("RATE_LIMIT");
       if (response.status === 402) throw new Error("PAYMENT_REQUIRED");
       const t = await response.text();
-      console.error("AI gateway error:", response.status, t);
+      console.error("OpenRouter error:", response.status, t);
       throw new Error("AI_ERROR");
     }
 

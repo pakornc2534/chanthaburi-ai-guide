@@ -1,8 +1,11 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useState } from "react";
 import { ArrowLeft, Clock, MapPin, Phone, Tag, Heart, Star } from "lucide-react";
-import { getPlaceById, listPlaces } from "@/server/places.functions";
+import { getPlaceById, listPlaces } from "@/server-fns/places.functions";
 import { useI18n, categoryLabel } from "@/lib/i18n";
 import { PlaceCard } from "@/components/PlaceCard";
+import { CheckInButton } from "@/components/CheckInButton";
+import { ReviewForm } from "@/components/ReviewForm";
 import { useFavorite } from "@/hooks/use-favorite";
 import { cn } from "@/lib/utils";
 import type { Database } from "@/integrations/supabase/types";
@@ -45,13 +48,32 @@ export const Route = createFileRoute("/places/$id")({
   }),
 });
 
+const CAT_EMOJI: Record<string, string> = {
+  beach: "🏖️", nature: "🏞️", temple: "⛩️", history: "🏛️",
+  food: "🍜", cafe: "☕", nightlife: "🍻", fruit: "🍇",
+};
+const CAT_GRADIENT: Record<string, string> = {
+  beach: "from-sky-200 to-cyan-300",
+  nature: "from-emerald-200 to-green-300",
+  temple: "from-amber-200 to-orange-300",
+  history: "from-stone-200 to-amber-200",
+  food: "from-orange-200 to-red-300",
+  cafe: "from-amber-100 to-yellow-200",
+  nightlife: "from-purple-300 to-fuchsia-400",
+  fruit: "from-lime-200 to-yellow-300",
+};
+
 function PlaceDetail() {
   const { place, all } = Route.useLoaderData();
   const { lang, t } = useI18n();
   const { isFav, toggle } = useFavorite(place.id);
+  const [imgError, setImgError] = useState(false);
 
   const name = lang === "th" ? place.name_th : place.name_en;
   const desc = lang === "th" ? place.description_th : place.description_en;
+  const showImage = place.image_url && !imgError;
+  const gradient = CAT_GRADIENT[place.category] ?? "from-slate-200 to-slate-300";
+  const emoji = CAT_EMOJI[place.category] ?? "📍";
 
   const nearby = all
     .filter((p: Place) => p.id !== place.id && p.category === place.category)
@@ -72,8 +94,25 @@ function PlaceDetail() {
       </Link>
 
       <div className="mt-3 overflow-hidden rounded-3xl border border-border shadow-soft">
-        {place.image_url && (
-          <img src={place.image_url} alt={name} className="aspect-[16/9] w-full object-cover" />
+        {showImage ? (
+          <img
+            src={place.image_url!}
+            alt={name}
+            onError={() => setImgError(true)}
+            className="aspect-[16/9] w-full object-cover"
+          />
+        ) : (
+          <div
+            className={cn(
+              "flex aspect-[16/9] w-full flex-col items-center justify-center gap-3 bg-gradient-to-br",
+              gradient,
+            )}
+          >
+            <span className="text-7xl">{emoji}</span>
+            <span className="px-4 text-center text-base font-medium text-foreground/70">
+              {name}
+            </span>
+          </div>
         )}
       </div>
 
@@ -132,6 +171,7 @@ function PlaceDetail() {
       )}
 
       <div className="mt-4 flex flex-wrap gap-2">
+        <CheckInButton placeId={place.id} />
         <a
           href={mapsUrl}
           target="_blank"
@@ -148,6 +188,11 @@ function PlaceDetail() {
           ✨ {t("askAI")}
         </Link>
       </div>
+
+      {/* Review section */}
+      <section className="mt-6">
+        <ReviewForm placeId={place.id} />
+      </section>
 
       {nearby.length > 0 && (
         <section className="mt-10">

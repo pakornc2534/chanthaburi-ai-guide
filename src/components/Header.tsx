@@ -2,6 +2,7 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { Palmtree } from "lucide-react";
+import { PointsBadge } from "./PointsBadge";
 
 export function Header() {
   const { lang, setLang, t } = useI18n();
@@ -12,6 +13,7 @@ export function Header() {
     { to: "/places", label: t("navPlaces") },
     { to: "/chat", label: t("navChat") },
     { to: "/planner", label: t("navPlanner") },
+    { to: "/rewards", label: t("navRewards") },
     { to: "/favorites", label: t("navFavorites") },
   ] as const;
 
@@ -43,25 +45,28 @@ export function Header() {
           })}
         </nav>
 
-        <div className="flex items-center gap-1 rounded-full border border-border bg-card p-0.5">
-          <button
-            onClick={() => setLang("th")}
-            className={cn(
-              "rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
-              lang === "th" ? "bg-primary text-primary-foreground" : "text-muted-foreground",
-            )}
-          >
-            ไทย
-          </button>
-          <button
-            onClick={() => setLang("en")}
-            className={cn(
-              "rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
-              lang === "en" ? "bg-primary text-primary-foreground" : "text-muted-foreground",
-            )}
-          >
-            EN
-          </button>
+        <div className="flex items-center gap-2">
+          <PointsBadge />
+          <div className="flex items-center gap-1 rounded-full border border-border bg-card p-0.5">
+            <button
+              onClick={() => setLang("th")}
+              className={cn(
+                "rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
+                lang === "th" ? "bg-primary text-primary-foreground" : "text-muted-foreground",
+              )}
+            >
+              ไทย
+            </button>
+            <button
+              onClick={() => setLang("en")}
+              className={cn(
+                "rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
+                lang === "en" ? "bg-primary text-primary-foreground" : "text-muted-foreground",
+              )}
+            >
+              EN
+            </button>
+          </div>
         </div>
       </div>
     </header>

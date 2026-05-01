@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { Heart, MapPin, Star } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { useI18n, categoryLabel } from "@/lib/i18n";
@@ -7,12 +8,38 @@ import { cn } from "@/lib/utils";
 
 type Place = Database["public"]["Tables"]["places"]["Row"];
 
+const CAT_EMOJI: Record<string, string> = {
+  beach: "🏖️",
+  nature: "🏞️",
+  temple: "⛩️",
+  history: "🏛️",
+  food: "🍜",
+  cafe: "☕",
+  nightlife: "🍻",
+  fruit: "🍇",
+};
+
+const CAT_GRADIENT: Record<string, string> = {
+  beach: "from-sky-200 to-cyan-300",
+  nature: "from-emerald-200 to-green-300",
+  temple: "from-amber-200 to-orange-300",
+  history: "from-stone-200 to-amber-200",
+  food: "from-orange-200 to-red-300",
+  cafe: "from-amber-100 to-yellow-200",
+  nightlife: "from-purple-300 to-fuchsia-400",
+  fruit: "from-lime-200 to-yellow-300",
+};
+
 export function PlaceCard({ place }: { place: Place }) {
   const { lang, t } = useI18n();
   const { isFav, toggle } = useFavorite(place.id);
+  const [imgError, setImgError] = useState(false);
 
   const name = lang === "th" ? place.name_th : place.name_en;
   const desc = lang === "th" ? place.description_th : place.description_en;
+  const showImage = place.image_url && !imgError;
+  const gradient = CAT_GRADIENT[place.category] ?? "from-slate-200 to-slate-300";
+  const emoji = CAT_EMOJI[place.category] ?? "📍";
 
   return (
     <Link
@@ -21,13 +48,26 @@ export function PlaceCard({ place }: { place: Place }) {
       className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-gradient-card shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elevated"
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
-        {place.image_url && (
+        {showImage ? (
           <img
-            src={place.image_url}
+            src={place.image_url!}
             alt={name}
+            onError={() => setImgError(true)}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
           />
+        ) : (
+          <div
+            className={cn(
+              "flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br",
+              gradient,
+            )}
+          >
+            <span className="text-5xl">{emoji}</span>
+            <span className="px-3 text-center text-xs font-medium text-foreground/70 line-clamp-2">
+              {name}
+            </span>
+          </div>
         )}
         <button
           onClick={(e) => {

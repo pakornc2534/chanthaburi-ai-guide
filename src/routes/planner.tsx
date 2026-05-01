@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Sparkles, Save, Share2, Loader2 } from "lucide-react";
-import { generateTripPlan } from "@/server/ai.functions";
-import { saveTrip, listPlaces } from "@/server/places.functions";
+import { Sparkles, Share2, Loader2 } from "lucide-react";
+import { generateTripPlan } from "@/server-fns/ai.functions";
+import { saveTrip, listPlaces } from "@/server-fns/places.functions";
+import { HotelPartnerSlider } from "@/components/HotelPartnerSlider";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import type { Database } from "@/integrations/supabase/types";
@@ -25,7 +26,7 @@ export const Route = createFileRoute("/planner")({
   }),
 });
 
-const INTERESTS = ["beach", "nature", "history", "temple", "cafe", "market", "fruit"] as const;
+const INTERESTS = ["beach", "nature", "temple", "history", "food", "cafe", "nightlife", "fruit"] as const;
 
 function PlannerPage() {
   const places = Route.useLoaderData() as Place[];
@@ -224,6 +225,9 @@ function PlannerPage() {
               </div>
             ))}
           </div>
+
+          {/* Partner hotels recommended after the plan */}
+          <HotelPartnerSlider />
         </section>
       )}
       <div className="h-12" />

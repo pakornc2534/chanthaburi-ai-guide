@@ -61,3 +61,22 @@ export const saveTrip = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return trip;
   });
+
+export const listPartners = createServerFn({ method: "GET" }).handler(async () => {
+  const { data, error } = await supabaseAdmin
+    .from("partners")
+    .select("*")
+    .order("rating", { ascending: false });
+  if (error) throw new Error(error.message);
+  return data ?? [];
+});
+
+export const listRewards = createServerFn({ method: "GET" }).handler(async () => {
+  const { data, error } = await supabaseAdmin
+    .from("rewards")
+    .select("*, partners(*)")
+    .eq("active", true)
+    .order("point_cost", { ascending: true });
+  if (error) throw new Error(error.message);
+  return data ?? [];
+});

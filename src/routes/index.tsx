@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Sparkles, MessageSquare, ArrowRight } from "lucide-react";
-import { listPlaces } from "@/server/places.functions";
+import { listPlaces } from "@/server-fns/places.functions";
 import { useI18n, categoryLabel } from "@/lib/i18n";
 import { PlaceCard } from "@/components/PlaceCard";
 import type { Database } from "@/integrations/supabase/types";
@@ -23,7 +23,7 @@ export const Route = createFileRoute("/")({
   }),
 });
 
-const CATS = ["beach", "nature", "history", "temple", "cafe", "market", "fruit"] as const;
+const CATS = ["beach", "nature", "temple", "history", "food", "cafe", "nightlife", "fruit"] as const;
 
 function Index() {
   const places = Route.useLoaderData() as Place[];
@@ -118,14 +118,16 @@ function catEmoji(cat: string): string {
       return "🏖️";
     case "nature":
       return "🏞️";
-    case "history":
-      return "🏛️";
     case "temple":
       return "⛩️";
+    case "history":
+      return "🏛️";
+    case "food":
+      return "🍜";
     case "cafe":
       return "☕";
-    case "market":
-      return "🛍️";
+    case "nightlife":
+      return "🍻";
     case "fruit":
       return "🍇";
     default:

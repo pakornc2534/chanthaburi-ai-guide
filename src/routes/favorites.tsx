@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Heart } from "lucide-react";
-import { listPlaces } from "@/server/places.functions";
+import { listPlaces } from "@/server-fns/places.functions";
 import { useAllFavorites } from "@/hooks/use-favorite";
 import { useI18n } from "@/lib/i18n";
 import { PlaceCard } from "@/components/PlaceCard";

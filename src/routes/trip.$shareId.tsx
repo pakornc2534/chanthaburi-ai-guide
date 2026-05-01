@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { getTripByShareId, listPlaces } from "@/server/places.functions";
+import { getTripByShareId, listPlaces } from "@/server-fns/places.functions";
 import { useI18n } from "@/lib/i18n";
 import type { Database } from "@/integrations/supabase/types";
 

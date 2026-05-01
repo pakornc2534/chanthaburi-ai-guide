@@ -10,13 +10,14 @@ export const Route = createFileRoute("/api/chat")({
           const messages = body.messages as { role: string; content: string }[];
           const lang = (body.lang as string) === "en" ? "en" : "th";
 
-          const apiKey = process.env.LOVABLE_API_KEY;
+          const apiKey = process.env.OPENROUTER_API_KEY;
           if (!apiKey) {
-            return new Response(JSON.stringify({ error: "LOVABLE_API_KEY missing" }), {
+            return new Response(JSON.stringify({ error: "OPENROUTER_API_KEY missing" }), {
               status: 500,
               headers: { "Content-Type": "application/json" },
             });
           }
+          const model = process.env.OPENROUTER_MODEL || "google/gemini-2.0-flash-lite-001";
 
           // Inject places catalog into the system prompt
           const { data: places } = await supabaseAdmin
@@ -37,14 +38,16 @@ export const Route = createFileRoute("/api/chat")({
               ? `คุณคือไกด์นำเที่ยวจังหวัดจันทบุรี ตอบเป็นภาษาไทยอย่างเป็นมิตร ใช้ markdown ตอบสั้น กระชับ มีประโยชน์ แนะนำเฉพาะสถานที่จากรายการด้านล่างเท่านั้น และอ้างชื่อสถานที่ให้ตรง:\n\n${placesCtx}`
               : `You are a friendly local guide for Chanthaburi province, Thailand. Reply in English using markdown. Be concise and helpful. Only recommend places from the catalog below and use their exact names:\n\n${placesCtx}`;
 
-          const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          const aiResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
             method: "POST",
             headers: {
               Authorization: `Bearer ${apiKey}`,
               "Content-Type": "application/json",
+              "HTTP-Referer": process.env.OPENROUTER_SITE_URL || "http://localhost:5173",
+              "X-Title": process.env.OPENROUTER_SITE_NAME || "TripChan",
             },
             body: JSON.stringify({
-              model: "google/gemini-3-flash-preview",
+              model,
               messages: [{ role: "system", content: systemPrompt }, ...messages],
               stream: true,
             }),
@@ -64,7 +67,7 @@ export const Route = createFileRoute("/api/chat")({
               });
             }
             const t = await aiResp.text();
-            console.error("AI gateway error:", aiResp.status, t);
+            console.error("OpenRouter error:", aiResp.status, t);
             return new Response(JSON.stringify({ error: "ai_error" }), {
               status: 500,
               headers: { "Content-Type": "application/json" },

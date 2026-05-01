@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Home, MapPin, MessageSquare, Sparkles, Heart } from "lucide-react";
+import { Home, MapPin, MessageSquare, Sparkles, Gift } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -12,7 +12,7 @@ export function BottomNav() {
     { to: "/places", icon: MapPin, label: t("navPlaces") },
     { to: "/chat", icon: MessageSquare, label: t("navChat") },
     { to: "/planner", icon: Sparkles, label: t("navPlanner") },
-    { to: "/favorites", icon: Heart, label: t("navFavorites") },
+    { to: "/rewards", icon: Gift, label: t("navRewards") },
   ] as const;
 
   return (
