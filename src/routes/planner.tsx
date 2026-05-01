@@ -43,7 +43,7 @@ function PlannerPage() {
   const [params, setParams] = useState<unknown>(null);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
 
-  const placeMap = new Map(places.map((p) => [p.id, p]));
+  const placeMap = new Map<string, Place>(places.map((p: Place) => [p.id, p] as const));
 
   async function generate() {
     setLoading(true);

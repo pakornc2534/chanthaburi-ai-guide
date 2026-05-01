@@ -47,7 +47,7 @@ function SharedTripPage() {
   const { trip, places } = Route.useLoaderData();
   const { t, lang } = useI18n();
   const plan = trip.plan as Plan;
-  const placeMap = new Map(places.map((p) => [p.id, p]));
+  const placeMap = new Map<string, Place>(places.map((p: Place) => [p.id, p] as const));
 
   return (
     <div className="mx-auto max-w-3xl px-4 pt-4">
