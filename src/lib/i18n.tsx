@@ -110,6 +110,8 @@ const dict = {
   shareDesc: { th: "แผนเที่ยวที่แชร์", en: "Shared trip plan" },
   publicPlan: { th: "แผนเที่ยวสาธารณะ", en: "Public trip plan" },
   newChat: { th: "เริ่มใหม่", en: "New chat" },
+  recommendedPlaces: { th: "สถานที่ที่เกี่ยวข้อง", en: "Related places" },
+  followupTitle: { th: "ลองถามต่อ", en: "Try asking" },
   resultPlan: { th: "แผนเที่ยวของคุณ", en: "Your trip plan" },
   noResults: { th: "ไม่พบสถานที่ที่ค้นหา", en: "No matching places" },
   about: { th: "เกี่ยวกับ", en: "About" },
@@ -138,7 +140,10 @@ const dict = {
   },
   partnerHotels: { th: "โรงแรมพันธมิตร", en: "Partner hotels" },
   partnerShops: { th: "ร้านค้าพันธมิตร", en: "Partner shops" },
-  recommendedHotels: { th: "โรงแรมพันธมิตรแนะนำสำหรับทริปนี้", en: "Recommended partner hotels for this trip" },
+  recommendedHotels: {
+    th: "โรงแรมพันธมิตรแนะนำสำหรับทริปนี้",
+    en: "Recommended partner hotels for this trip",
+  },
   redeem: { th: "แลกใช้", en: "Redeem" },
   redeemed: { th: "แลกแล้ว", en: "Redeemed" },
   notEnoughPoints: { th: "แต้มไม่พอ", en: "Not enough points" },
@@ -195,6 +200,27 @@ export function useI18n() {
   if (!ctx) throw new Error("useI18n must be used within I18nProvider");
   return ctx;
 }
+
+const EXAMPLE_QUESTIONS: ReadonlyArray<{ th: string; en: string }> = [
+  { th: "ที่เที่ยวธรรมชาติ 1 วัน", en: "1-day nature trip" },
+  { th: "คาเฟ่ริมทะเลที่ห้ามพลาด", en: "Best beachfront cafés" },
+  { th: "ของกินขึ้นชื่อจันทบุรี", en: "Famous local food" },
+  { th: "วัดและสถานที่ประวัติศาสตร์", en: "Temples & history sites" },
+  { th: "หาดทรายขาวที่สวยที่สุด", en: "Best white-sand beaches" },
+  { th: "น้ำตกใกล้เมืองจันท์", en: "Waterfalls near town" },
+  { th: "สวนผลไม้น่าไป", en: "Fruit orchards to visit" },
+  { th: "ทริปครอบครัว 2 วัน", en: "2-day family trip" },
+  { th: "คาเฟ่ย่านเมืองเก่า", en: "Cafés in the old town" },
+  { th: "ของฝากเด็ดๆ", en: "Best souvenirs" },
+  { th: "ที่เที่ยวเข้าฟรี", en: "Free attractions" },
+  { th: "ทริปคู่รักโรแมนติก", en: "Romantic couple trip" },
+  { th: "อาหารทะเลร้านดัง", en: "Famous seafood spots" },
+  { th: "พิพิธภัณฑ์น่าไป", en: "Museums worth visiting" },
+  { th: "ตลาดเช้าจันทบุรี", en: "Morning markets" },
+  { th: "เที่ยวจันท์หน้าฝน", en: "Visiting in the rainy season" },
+];
+
+export const examplePool = (lang: Lang): string[] => EXAMPLE_QUESTIONS.map((q) => q[lang]);
 
 export const categoryLabel = (cat: string, lang: Lang): string => {
   const map: Record<string, { th: string; en: string }> = {
