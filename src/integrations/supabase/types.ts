@@ -14,7 +14,137 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      favorites: {
+        Row: {
+          created_at: string
+          id: string
+          place_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          place_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          place_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorites_place_id_fkey"
+            columns: ["place_id"]
+            isOneToOne: false
+            referencedRelation: "places"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      places: {
+        Row: {
+          address: string | null
+          category: string
+          created_at: string
+          description_en: string
+          description_th: string
+          district: string | null
+          featured: boolean | null
+          id: string
+          image_url: string | null
+          is_free: boolean | null
+          lat: number | null
+          lng: number | null
+          name_en: string
+          name_th: string
+          opening_hours: string | null
+          phone: string | null
+          price_info: string | null
+          rating: number | null
+          slug: string
+          tags: string[] | null
+        }
+        Insert: {
+          address?: string | null
+          category: string
+          created_at?: string
+          description_en: string
+          description_th: string
+          district?: string | null
+          featured?: boolean | null
+          id?: string
+          image_url?: string | null
+          is_free?: boolean | null
+          lat?: number | null
+          lng?: number | null
+          name_en: string
+          name_th: string
+          opening_hours?: string | null
+          phone?: string | null
+          price_info?: string | null
+          rating?: number | null
+          slug: string
+          tags?: string[] | null
+        }
+        Update: {
+          address?: string | null
+          category?: string
+          created_at?: string
+          description_en?: string
+          description_th?: string
+          district?: string | null
+          featured?: boolean | null
+          id?: string
+          image_url?: string | null
+          is_free?: boolean | null
+          lat?: number | null
+          lng?: number | null
+          name_en?: string
+          name_th?: string
+          opening_hours?: string | null
+          phone?: string | null
+          price_info?: string | null
+          rating?: number | null
+          slug?: string
+          tags?: string[] | null
+        }
+        Relationships: []
+      }
+      trips: {
+        Row: {
+          created_at: string
+          id: string
+          is_public: boolean
+          params: Json
+          plan: Json
+          share_id: string
+          title: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          params?: Json
+          plan?: Json
+          share_id?: string
+          title: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          params?: Json
+          plan?: Json
+          share_id?: string
+          title?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
