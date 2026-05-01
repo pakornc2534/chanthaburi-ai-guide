@@ -1,146 +1,206 @@
 # TripChan — เที่ยวจันท์ AI Guide
 
-แอป AI แนะนำสถานที่ท่องเที่ยวจังหวัดจันทบุรี รองรับแชทถาม-ตอบ สร้างแผนเดินทางอัตโนมัติ และระบบ check-in/review/รางวัล (POC)
+> แอป AI ไกด์ท่องเที่ยวจังหวัดจันทบุรี สองภาษา (ไทย/อังกฤษ) — แชทถาม-ตอบแบบ agentic RAG, สร้างแผนทริปอัตโนมัติ, และระบบ check-in / รีวิว / รางวัล (POC)
 
-## Stack
+**🌐 Live demo:** https://trip.ipongs.com
+**📦 Repo:** https://github.com/pakornc2534/chanthaburi-ai-guide
 
-- TanStack Start (React 19 + Router) + Vite 7 + TypeScript
-- Tailwind CSS 4 + shadcn/ui
-- Supabase (PostgreSQL + Auth + RLS)
-- OpenRouter (AI gateway) — model: `google/gemini-2.0-flash-lite-001` (เปลี่ยนได้)
-- Cloudflare Workers (deploy target)
+---
 
-## Quick Start (สำหรับ collaborators)
+## ✨ Highlights
+
+- **Agentic RAG chat** — AI แนะนำได้ "เฉพาะ" สถานที่ที่อยู่ใน catalog 49 รายการเท่านั้น (ป้องกัน hallucination) พร้อมแสดง place cards + suggested follow-ups
+- **AI trip planner** — สร้างแผนเที่ยว 1–3 วันด้วย structured output (function calling) แชร์เป็นลิงก์ได้
+- **Bilingual TH/EN** — สลับภาษาทั้ง UI และ AI prompt ได้ทันที
+- **Check-in & Rewards POC** — เช็คอิน + รีวิว + สะสมแต้ม + แลกส่วนลดกับ partner (โรงแรม 6 + ร้านค้า 3 + 22 รางวัล)
+- **Mobile-first** — ออกแบบให้ใช้บนมือถือเป็นหลัก (bottom nav, hero carousel, partner slider)
+- **Production-ready deploy** — Docker + Nginx + Let's Encrypt บน Ubuntu (รัน live อยู่ที่ `trip.ipongs.com`)
+
+---
+
+## 🎯 Problem & Solution
+
+**ปัญหา:** ข้อมูลท่องเที่ยวจันทบุรีกระจัดกระจาย, ส่วนใหญ่เป็นภาษาไทย, นักท่องเที่ยวต่างชาติเข้าถึงยาก, และไม่มีตัวช่วยวางแผนแบบ personalized
+
+**ทางออก — TripChan:**
+1. รวมสถานที่ท่องเที่ยว 49 แห่งใน 8 หมวด (ทะเล, ภูเขา, คาเฟ่, อาหาร, ประวัติศาสตร์, อัญมณี, ธรรมชาติ, ผลไม้)
+2. AI ตอบเป็นภาษาที่ผู้ใช้เลือก โดย **อ้างอิงเฉพาะ catalog จริง** (grounded) — ลดความเสี่ยงข้อมูลมั่ว
+3. AI วางแผนทริปเป็น JSON ที่ structured (มีเวลา, สถานที่, หมายเหตุ) นำไปแสดงเป็น UI ได้ทันที
+4. เพิ่ม engagement ผ่าน gamification — check-in / review / รางวัล
+
+---
+
+## 🤖 AI Architecture
+
+```
+User → Chat UI (TH/EN)
+  │
+  ├─► /api/chat (TanStack Start server route)
+  │     │
+  │     ├─ 1. Agentic pre-call: classify intent (places/chat) + pick place IDs from catalog
+  │     │     └─ OpenRouter (tool calling) → returns { intent, placeIds[], followups[] }
+  │     │
+  │     ├─ 2. Fetch matched places from Supabase (RLS via publishable key)
+  │     │
+  │     └─ 3. Stream response (SSE) ← OpenRouter chat completions
+  │           system prompt: "answer ONLY using the place catalog provided"
+  │
+  └─► Renders: markdown reply + place cards + clickable followup chips
+```
+
+**โมเดลที่ใช้:** `google/gemini-2.0-flash-lite-001` (default — เร็ว, ถูก, free tier ใช้ได้)
+เปลี่ยนผ่าน env `OPENROUTER_MODEL` → รองรับ Claude, GPT, Llama ทุกตัวที่ OpenRouter มี
+
+**ทำไมถึง grounded ดี:**
+- System prompt บังคับให้อ้างอิงเฉพาะรายการที่ส่งให้
+- Pre-call agent กรอง catalog เหลือเฉพาะที่เกี่ยวข้องก่อน → ประหยัด token + ลด noise
+- ทุก place card ที่โผล่ใน chat ลิงก์กลับไปที่ `/places/$id` จริง
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Tech |
+|---|---|
+| Frontend | React 19 + TanStack Router (file-based) + Vite 7 + TypeScript |
+| Styling | Tailwind CSS 4 + shadcn/ui (Radix-based) |
+| Server | TanStack Start server functions + SSE streaming |
+| Database | Supabase (Postgres + Auth + RLS) |
+| AI | OpenRouter (multi-model gateway) — default Gemini 2.0 Flash Lite |
+| Deploy | Cloudflare Workers (default) **หรือ** Docker + Nginx บน Ubuntu (production) |
+
+---
+
+## 🚀 Quick Start (เปิดให้กรรมการรันเองได้ใน 5 นาที)
 
 ### 1. Clone + install
 
 ```bash
 git clone https://github.com/pakornc2534/chanthaburi-ai-guide.git
 cd chanthaburi-ai-guide
-bun install
-# หรือ npm install
+npm install
 ```
 
-### 2. ตั้งค่า `.env`
+> ใช้ `npm` เป็น source of truth (committed `package-lock.json`) — `bun` ก็รันได้ถ้าติดตั้งไว้
+
+### 2. ตั้ง Supabase ของตัวเอง (สำหรับกรรมการ)
+
+1. สร้างโปรเจกต์ฟรีที่ https://supabase.com/dashboard
+2. รัน migrations (เลือกวิธีใดวิธีหนึ่ง):
+   - **CLI:** `supabase link --project-ref <ref> && supabase db push`
+   - **Web:** เปิด SQL Editor → paste ไฟล์ใน `supabase/migrations/*.sql` ตามลำดับเวลา (4 ไฟล์)
+3. คัด keys จาก **Settings → API**
+
+### 3. ตั้งค่า `.env`
 
 ```bash
 cp .env.example .env
 ```
 
-แล้วเปิด `.env` แก้ค่าตามนี้:
+แก้ค่าใน `.env`:
 
-**Supabase (ทีมใช้ project เดียวกัน)**
-- ขอ `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_*` จาก project owner
-- `SUPABASE_SERVICE_ROLE_KEY` — ขอ owner ส่งให้ทาง DM (อย่าส่งใน chat สาธารณะ) หรือ:
-  - เข้า [Supabase Dashboard](https://supabase.com/dashboard) (ต้องถูกเชิญเป็น collaborator)
-  - Settings → API → `service_role` → Reveal → Copy
+```ini
+# Supabase (server)
+SUPABASE_URL="https://<your-ref>.supabase.co"
+SUPABASE_PUBLISHABLE_KEY="sb_publishable_..."
+SUPABASE_SERVICE_ROLE_KEY="<service_role_key>"   # server-only — bypasses RLS
 
-**OpenRouter (แต่ละคนคีย์ตัวเอง)**
-- สมัครฟรีที่ https://openrouter.ai/keys → สร้าง API key
-- Free tier ก็ใช้ Gemini Flash Lite ได้สบาย
+# Supabase (client — baked into bundle, publishable เท่านั้น)
+VITE_SUPABASE_PROJECT_ID="<your-ref>"
+VITE_SUPABASE_URL="https://<your-ref>.supabase.co"
+VITE_SUPABASE_PUBLISHABLE_KEY="sb_publishable_..."
 
-### 3. Database (ถ้าตั้ง project ใหม่)
-
-ทีม dev ใช้ shared Supabase project — ปกติไม่ต้อง run migrations ซ้ำ
-
-ถ้าตั้ง local Supabase หรือ project ใหม่ ให้รัน migration files ตามลำดับ:
-
-```bash
-# ผ่าน Supabase CLI
-supabase link --project-ref YOUR_PROJECT_REF
-supabase db push
-
-# หรือ paste SQL ใน supabase/migrations/*.sql เข้า Dashboard SQL Editor ตามลำดับเวลา
+# OpenRouter — สมัครฟรีที่ https://openrouter.ai/keys
+OPENROUTER_API_KEY="sk-or-v1-..."
+OPENROUTER_MODEL="google/gemini-2.0-flash-lite-001"
 ```
 
-Migrations:
-- `20260501040649_*.sql` — schema (places, favorites, trips + RLS)
-- `20260501052000_seed_places.sql` — superseded (no-op)
-- `20260501060000_reseed_places_8_categories.sql` — 49 places ใน 8 หมวด
-- `20260501070000_add_partners_rewards.sql` — partners + rewards (POC)
-
-### 4. Run dev
+### 4. รัน
 
 ```bash
-bun run dev
+npm run dev
 ```
 
 เปิด http://localhost:8080
 
-## ฟีเจอร์
+---
 
-| Route | คำอธิบาย |
-|-------|---------|
-| `/` | หน้าแรก — Hero + featured + categories |
-| `/places` | รวมสถานที่ + filter 8 หมวด + search |
-| `/places/$id` | รายละเอียด + check-in + review + แผนที่ |
-| `/chat` | แชท AI streaming (OpenRouter Gemini) |
-| `/planner` | สร้างแผนเที่ยวด้วย AI + slidebar โรงแรม partner |
-| `/rewards` | สะสมแต้ม + แลกส่วนลดกับ partner (POC) |
+## 📍 Routes & Features
+
+| Route | Feature |
+|---|---|
+| `/` | หน้าแรก — Hero carousel + featured places + 8 categories |
+| `/places` | รวมสถานที่ + filter หมวด + search |
+| `/places/$id` | รายละเอียดสถานที่ + แผนที่ + check-in + รีวิว |
+| `/chat` | AI chat (streaming, agentic RAG, place cards, follow-up chips) |
+| `/planner` | AI trip planner + slider โรงแรม partner |
+| `/rewards` | สะสมแต้ม + แลกส่วนลด partner |
 | `/favorites` | รายการโปรด (localStorage) |
-| `/trip/$shareId` | ดูแผนที่แชร์มา |
+| `/trip/$shareId` | ดูแผนเที่ยวที่แชร์ลิงก์มา |
 
 ### Check-in / Review / Points (POC)
 
-ระบบสะสมแต้มแบบจำลอง state เก็บใน `localStorage`:
-- Check-in สถานที่: **+10 แต้ม** (วันละ 1 ครั้ง/สถานที่)
-- Review สถานที่: **+25 แต้ม** (1 ครั้ง/สถานที่ แก้ไขทีหลังได้)
-- ใช้แต้มแลกส่วนลดที่ partner (โรงแรม 6 + ร้านค้า 3 + ส่วนลด 22 รายการ)
+ระบบสะสมแต้มจำลอง state ใน `localStorage` (ไม่ผูก auth — เพื่อให้กรรมการลองได้ทันที):
+- Check-in สถานที่: **+10 แต้ม** (1 ครั้ง/วัน/สถานที่)
+- รีวิว: **+25 แต้ม** (1 ครั้ง/สถานที่ แก้ไขได้)
+- ใช้แต้มแลกส่วนลดกับ partner
 
-โค้ดที่เกี่ยวข้อง: `src/lib/local-state.ts`
+โค้ด: `src/lib/local-state.ts`
 
-## Architecture
+---
+
+## 📁 Project Structure
 
 ```
 src/
-├── routes/
-│   ├── __root.tsx
-│   ├── index.tsx, places.tsx (layout), places.index.tsx (list), places.$id.tsx,
-│   │   chat.tsx, planner.tsx, rewards.tsx, favorites.tsx, trip.$shareId.tsx
-│   └── api/chat.ts          # streaming endpoint
+├── routes/                    # File-based routes (TanStack Router)
+│   ├── __root.tsx             # Layout + providers + BottomNav
+│   ├── index.tsx              # Home
+│   ├── places.{tsx,index.tsx,$id.tsx}
+│   ├── chat.tsx               # AI chat UI
+│   ├── planner.tsx            # AI trip planner UI
+│   ├── rewards.tsx, favorites.tsx, trip.$shareId.tsx
+│   └── api/chat.ts            # SSE streaming endpoint (agentic RAG)
 ├── server-fns/
-│   ├── places.functions.ts  # listPlaces, getPlaceById, listPartners, listRewards, ...
-│   └── ai.functions.ts      # generateTripPlan (function calling)
-├── components/               # PointsBadge, CheckInButton, ReviewForm, PartnerCard, HotelPartnerSlider, ...
+│   ├── places.functions.ts    # listPlaces, getPlaceById, listPartners, listRewards
+│   └── ai.functions.ts        # generateTripPlan (structured output)
+├── components/                # PlaceCard, CheckInButton, ReviewForm, PointsBadge,
+│                              # PartnerCard, HotelPartnerSlider, BottomNav, ...
+│   └── ui/                    # shadcn/ui primitives
 ├── lib/
-│   ├── i18n.tsx             # bilingual TH/EN strings
-│   ├── local-state.ts       # POC state for check-ins/reviews/redemptions
+│   ├── i18n.tsx               # bilingual TH/EN strings + LangProvider
+│   ├── local-state.ts         # POC: check-ins / reviews / redemptions
 │   └── local-favorites.ts
-├── hooks/
-└── integrations/supabase/   # client + admin + types (auto-generated)
+├── hooks/                     # use-mobile, use-favorite, ...
+└── integrations/supabase/     # client (browser) + client.server (admin) + types
+
+supabase/migrations/           # 4 SQL files — schema + seed (49 places, 8 categories, partners, rewards)
 ```
 
-## AI Provider
+---
 
-OpenAI-compatible endpoint: `https://openrouter.ai/api/v1/chat/completions`
+## 🔐 Security Notes
 
-เปลี่ยนโมเดลผ่าน env var `OPENROUTER_MODEL` เช่น:
-- `google/gemini-2.0-flash-lite-001` (ปัจจุบัน — เร็ว+ถูก)
-- `google/gemini-2.0-flash-001` (แม่นกว่าถ้า structured output มีปัญหา)
-- `anthropic/claude-3.5-haiku`
-- `openai/gpt-4o-mini`
+- **`.env` อยู่ใน `.gitignore`** — ไม่เคย commit
+- `SUPABASE_SERVICE_ROLE_KEY` และ `OPENROUTER_API_KEY` ใช้ฝั่ง server เท่านั้น (ไม่อยู่หลัง prefix `VITE_`)
+- `client.server.ts` (admin Supabase client) ห้าม import จาก component หรือ client-side module
+- RLS เปิดทุกตารางใน Supabase — publishable key bypass ไม่ได้
+- ระบบ chat รับ user input โดยตรง → **TODO: rate limiting** ก่อน production scale
 
-## ⚠️ Security
+ถ้า key หลุด:
+- Supabase → Settings → API → Reset `service_role`
+- OpenRouter → https://openrouter.ai/keys → Delete + Create
 
-**อย่า commit `.env` เด็ดขาด** — ไฟล์นี้อยู่ใน `.gitignore` แล้ว
+---
 
-- `SUPABASE_SERVICE_ROLE_KEY` — bypass RLS, ใช้ฝั่ง server เท่านั้น
-- `OPENROUTER_API_KEY` — เสียเงินตามการใช้
+## 🚢 Deployment
 
-ถ้า key หลุด: revoke ทันที + สร้างใหม่
-- Supabase: Dashboard → Settings → API → "Reset service_role"
-- OpenRouter: https://openrouter.ai/keys → Delete + Create new
+**Production live:** `https://trip.ipongs.com` — Docker + Nginx + Let's Encrypt บน Ubuntu
 
-## ค่าใช้จ่าย
+วิธี deploy แบบเต็ม → ดู [`DEPLOY.md`](./DEPLOY.md) (มี runbook ครบ: DNS, certbot, docker-compose, nginx config)
 
-- Supabase free tier: 500MB DB + 50k MAU
-- OpenRouter Gemini Flash Lite: ~$0.075 / 1M input tokens (ใช้น้อยมากในแอปนี้)
-- Cloudflare Workers free: 100k requests/day
+---
 
-## Deploy
-
-โปรเจกต์ตั้งค่าสำหรับ Cloudflare Workers (`wrangler.jsonc`) แต่จะ deploy บน Vercel/Netlify ก็ได้ — TanStack Start รองรับทุกแพลตฟอร์ม อย่าลืมตั้ง env vars บนเซิร์ฟเวอร์ด้วย
-
-## License
+## 📄 License
 
 MIT
